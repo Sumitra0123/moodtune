@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOOD TUNE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* Main Background Styles */
+        body {
+            background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: #f8f8f8;
+            min-height: 100vh;
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Floating Particle Effects (Psychogeographic Feel) */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(255,255,255,0.1) 1px, transparent 1px),
+                radial-gradient(circle at 80% 70%, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+            opacity: 0.5;
+        }
+
+        /* Container Styling */
+        .container {
+            max-width: 95%;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            backdrop-filter: blur(8px);
+            background: rgba(15, 32, 39, 0.7);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Header Styles */
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 10px rgba(0, 210, 255, 0.2);
+        }
+
+        h3 {
+            color: #a1c4fd;
+            margin: 1.5rem 0;
+            font-weight: 500;
+        }
+
+        /* Node (Selection Button) Styles */
+        .node {
+            padding: 1rem 1.5rem;
+            margin: 0.5rem auto;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            width: 80%;
+            max-width: 300px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+            font-weight: 400;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .node::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: 0.5s;
+        }
+
+        .node:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .node:hover::before {
+            left: 100%;
+        }
+
+        .node.selected {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 5px 15px rgba(118, 75, 162, 0.4);
+            border-color: transparent;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 2rem auto;
+            transition: all 0.3s ease;
+            display: block;
+            width: 80%;
+            max-width: 300px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Music Player Styles */
+        .player-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 2rem auto;
+            width: 90%;
+            max-width: 350px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        audio {
+            width: 100%;
+            margin: 1rem 0;
+            filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.3));
+        }
+
+        .music-info {
+            color: #b3e5fc;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .node, .btn {
+                width: 90%;
+                padding: 0.8rem 1.2rem;
+            }
+        }
+
+    /* Psychogeographic Color Coding */
+    .node[data-value="river"]:hover {
+        background: rgba(64, 164, 223, 0.2);
+    }
+    .node[data-value="park"]:hover {
+        background: rgba(76, 175, 80, 0.2);
+    }
+    .node[data-value="cafe"]:hover {
+        background: rgba(255, 193, 7, 0.2);
+    }
+    .node[data-value="pub"]:hover {
+        background: rgba(233, 30, 99, 0.2);
+    }
+
+    .step-section {
+        display: none;
+        transition: all 0.5s ease;
+    }
+
+    /* Disable next buttons until selection is made */
+    .btn[disabled] {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+    </style>
+</head>
+<body>
+    <div class="container">
+  <h1>MOOD TUNE</h1>
+  
+        <div id="environment-section" class="step-section">
+            <h3>Are you Inside or Outside?</h3>
+            <div class="node environment" data-value="inside">Inside</div>
+            <div class="node environment" data-value="outside">Outside</div>
+            <button id="environment-next" class="btn" disabled>Next →</button>
+        </div>
+
+        <!-- Location Selection -->
+        <div id="location-section" class="step-section">
+            <h3>Where are you?</h3>
+            <!-- Outdoor Locations -->
+            <div class="node location outdoor" data-value="river">River Way</div>
+            <div class="node location outdoor" data-value="park">Godfrey Meadow Park</div>
+            <div class="node location outdoor" data-value="cafe">Harris and Hoole Cafe</div>
+            <div class="node location outdoor" data-value="pub">William Cobbett Pub</div>
+            <!-- Indoor Locations -->
+            <div class="node location indoor" data-value="bedroom">Bedroom</div>
+            <div class="node location indoor" data-value="living-room">Living Room</div>
+            <div class="node location indoor" data-value="kitchen">Kitchen</div>
+            <button id="location-next" class="btn" disabled>Next →</button>
+        </div>
+  
+  <!-- Mood Selection -->
+  <div id="mood-section" class="step-section">
+    <h3>How are you feeling?</h3>
+    <div class="node mood" data-value="happy">Happy</div>
+    <div class="node mood" data-value="depressed">Depressed</div>
+    <div class="node mood" data-value="relaxed">Relaxed</div>
+    <div class="node mood" data-value="confused">Confused</div>
+    <div class="node mood" data-value="joyful">Joyful</div>
+    <button id="mood-next" class="btn" disabled>Next →</button>
+  </div>
+  
+  <!-- Music Player -->
+  <div id="player-section" class="step-section">
+    <h3>Now Playing</h3>
+    <audio id="music-player" controls></audio>
+    <p class="music-info">Music to enhance your mood</p>
+    <button id="player-next" class="btn">How do you feel now?</button>
+  </div>
+  
+  <!-- Feedback -->
+  <div id="feedback-section" class="step-section">
+    <h3>How do you feel now?</h3>
+    <div class="node after" data-value="better">Better</div>
+    <div class="node after" data-value="same">About the same</div>
+    <div class="node after" data-value="worse">Worse</div>
+    <button id="submit-btn" class="btn">Submit</button>
+  </div>
+    </div>
+
+    <script>
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // New environment state
+        let selectedEnvironment = null;
+        let selectedLocation = null;
+        let selectedMood = null;
+
+        // Updated sections
+        const sections = {
+            environment: document.getElementById('environment-section'),
+            location: document.getElementById('location-section'),
+            mood: document.getElementById('mood-section'),
+            player: document.getElementById('player-section'),
+            feedback: document.getElementById('feedback-section')
+        };
+
+        // Initialize showing environment first
+        function initSections() {
+            sections.environment.style.display = 'block';
+            sections.location.style.display = 'none';
+            sections.mood.style.display = 'none';
+            sections.player.style.display = 'none';
+            sections.feedback.style.display = 'none';
+        }
+        initSections();
+
+        
+
+    // Audio Element
+    const musicPlayer = document.getElementById('music-player');
+
+
+        // Environment Selection
+        document.querySelectorAll('.environment').forEach(node => {
+            node.addEventListener('click', function() {
+                document.querySelectorAll('.environment').forEach(n => n.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedEnvironment = this.dataset.value;
+                document.getElementById('environment-next').disabled = false;
+            });
+        });
+
+        // Environment Next Button
+        document.getElementById('environment-next').addEventListener('click', () => {
+            sections.environment.style.display = 'none';
+            sections.location.style.display = 'block';
+            
+            // Show/hide appropriate locations
+            document.querySelectorAll('.location').forEach(loc => {
+                loc.style.display = loc.classList.contains(selectedEnvironment === 'inside' ? 'indoor' : 'outdoor') 
+                    ? 'block' 
+                    : 'none';
+            });
+        });
+    // Location Selection
+    document.querySelectorAll('.location').forEach(node => {
+        node.addEventListener('click', function() {
+            document.querySelectorAll('.location').forEach(n => n.classList.remove('selected'));
+            this.classList.add('selected');
+            selectedLocation = this.dataset.value;
+            document.getElementById('location-next').disabled = false;
+        });
+    });
+
+    // Mood Selection
+    document.querySelectorAll('.mood').forEach(node => {
+        node.addEventListener('click', function() {
+            document.querySelectorAll('.mood').forEach(n => n.classList.remove('selected'));
+            this.classList.add('selected');
+            selectedMood = this.dataset.value;
+            document.getElementById('mood-next').disabled = false;
+        });
+    });
+
+    // Navigation
+    document.getElementById('location-next').addEventListener('click', () => {
+        sections.location.style.display = 'none';
+        sections.mood.style.display = 'block';
+    });
+
+    document.getElementById('mood-next').addEventListener('click', () => {
+        // Play music when moving to player section
+        if (selectedLocation && selectedMood) {
+            const track = musicLibrary[selectedLocation][selectedMood];
+            musicPlayer.src = track;
+            musicPlayer.play();
+            
+            sections.mood.style.display = 'none';
+            sections.player.style.display = 'block';
+        }
+    });
+
+    document.getElementById('player-next').addEventListener('click', () => {
+        sections.player.style.display = 'none';
+        sections.feedback.style.display = 'block';
+    });
+
+    // Handle music ending
+    musicPlayer.addEventListener('ended', () => {
+        document.getElementById('player-next').disabled = false;
+    });
+
+    // Rest of your code (background system, feedback, etc.)
+    // ... [Keep the background change and feedback code] ...
+
+        // Next Buttons
+        const nextButtons = {
+            location: document.getElementById('location-next'),
+            mood: document.getElementById('mood-next'),
+            player: document.getElementById('player-next'),
+            submit: document.getElementById('submit-btn')
+        };
+
+        // Location Selection
+        const locationNodes = document.querySelectorAll('.location');
+        locationNodes.forEach(node => {
+            node.addEventListener('click', function() {
+                locationNodes.forEach(n => n.classList.remove('selected'));
+                this.classList.add('selected');
+                nextButtons.location.disabled = false;
+            });
+        });
+
+        // Mood Selection
+        const moodNodes = document.querySelectorAll('.mood');
+        moodNodes.forEach(node => {
+            node.addEventListener('click', function() {
+                moodNodes.forEach(n => n.classList.remove('selected'));
+                this.classList.add('selected');
+                nextButtons.mood.disabled = false;
+            });
+        });
+
+        // Navigation
+        nextButtons.location.addEventListener('click', () => {
+            sections.location.style.display = 'none';
+            sections.mood.style.display = 'block';
+        });
+
+        nextButtons.mood.addEventListener('click', () => {
+            sections.mood.style.display = 'none';
+            sections.player.style.display = 'block';
+        });
+
+        nextButtons.player.addEventListener('click', () => {
+            sections.player.style.display = 'none';
+            sections.feedback.style.display = 'block';
+        });
+
+        // Music Player Functionality
+        //const musicPlayer = document.getElementById('music-player');
+        const afterNodes = document.querySelectorAll('.after');
+
+        // After Mood Selection
+        afterNodes.forEach(node => {
+            node.addEventListener('click', function() {
+                afterNodes.forEach(n => n.classList.remove('selected'));
+                this.classList.add('selected');
+                nextButtons.submit.disabled = false;
+            });
+        });
+
+        // Submit Handler
+        nextButtons.submit.addEventListener('click', () => {
+            alert('Thank you for your feedback!');
+            location.reload();
+        });
+
+        // Background Theme System
+        const locationThemes = {
+  river: {
+    gradient: ['#0f3443', '#34e89e'],
+    particles: 'rgba(52, 232, 158, 0.2)',
+    accent: '#34e89e'
+  },
+  park: {
+    gradient: ['#11998e', '#38ef7d'],
+    particles: 'rgba(17, 153, 142, 0.2)',
+    accent: '#38ef7d'
+  },
+  cafe: {
+    gradient: ['#f46b45', '#eea849'],
+    particles: 'rgba(238, 168, 73, 0.2)',
+    accent: '#eea849'
+  },
+  pub: {
+    gradient: ['#8E2DE2', '#4A00E0'],
+    particles: 'rgba(142, 45, 226, 0.2)',
+    accent: '#8E2DE2'
+  },
+  
+            bedroom: {
+                gradient: ['#2C3E50', '#4CA1AF'],
+                particles: 'rgba(76, 161, 175, 0.2)',
+                accent: '#4CA1AF'
+            },
+            'living-room': {
+                gradient: ['#606c88', '#3f4c6b'],
+                particles: 'rgba(96, 108, 136, 0.2)',
+                accent: '#606c88'
+            },
+            kitchen: {
+                gradient: ['#EB5757', '#000000'],
+                particles: 'rgba(235, 87, 87, 0.2)',
+                accent: '#EB5757'
+            }
+};
+        // Unified location nodes reference
+        const allLocationNodes = document.querySelectorAll('.location');
+        allLocationNodes.forEach(node => {
+            node.addEventListener('click', function() {
+                const location = this.getAttribute('data-value');
+                changeBackground(location);
+            });
+        });
+
+// Function to change background based on location
+function changeBackground(location) {
+  const theme = locationThemes[location];
+  
+  // Change gradient background
+  document.body.style.background = `linear-gradient(-45deg, ${theme.gradient[0]}, ${theme.gradient[1]})`;
+  
+  // Change particle effects color
+  document.body.style.setProperty('--particle-color', theme.particles);
+  
+  // Change accent colors for selected state
+  document.documentElement.style.setProperty('--accent-color', theme.accent);
+  
+  // Add psychogeographic background image based on location
+  const bgImages = {
+    river: 'url("https://images.unsplash.com/photo-1505118380757-91f5f5632de0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80")',
+    park: 'url("https://images.unsplash.com/photo-1476231682828-37e571bc172f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80")',
+    cafe: 'url("https://images.unsplash.com/photo-1445116572660-236099ec97a0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80")',
+    pub: 'url("https://images.unsplash.com/photo-1514933651103-005eec06c04b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80")'
+  };
+  
+  // Create overlay element if it doesn't exist
+  let overlay = document.getElementById('location-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'location-overlay';
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundSize = 'cover';
+    overlay.style.backgroundPosition = 'center';
+    overlay.style.opacity = '0.15';
+    overlay.style.zIndex = '-1';
+    overlay.style.transition = 'opacity 1s ease';
+    document.body.appendChild(overlay);
+  }
+  
+  // Set new background image
+  overlay.style.backgroundImage = bgImages[location];
+  overlay.style.opacity = '0';
+  setTimeout(() => {
+    overlay.style.backgroundImage = bgImages[location];
+    overlay.style.opacity = '0.15';
+  }, 100);
+}
+
+// Add these CSS variables to your stylesheet
+const style = document.createElement('style');
+style.textContent = `
+  :root {
+    --particle-color: rgba(255,255,255,0.1);
+    --accent-color: #667eea;
+  }
+  
+  body::before {
+    background-image: 
+      radial-gradient(circle at 20% 30%, var(--particle-color) 1px, transparent 1px),
+      radial-gradient(circle at 80% 70%, var(--particle-color) 1px, transparent 1px);
+  }
+  
+  .node.selected {
+    background: linear-gradient(135deg, var(--accent-color), #764ba2);
+  }
+  
+  .btn {
+    background: linear-gradient(135deg, var(--accent-color), #764ba2);
+  }
+`;
+document.head.appendChild(style);
+        // Sample music tracks for different moods/locations
+        const musicLibrary = {
+            river: {
+                happy: "song (1).mp3",
+                depressed: "song (2).mp3",
+                relaxed: "song (3).mp3",
+                confused: "song (4).mp3",
+                joyful: "song (5).mp3"
+            },
+            park: {
+                happy: "song (6).mp3",
+                depressed: "song (7).mp3",
+                relaxed: "song (8).mp3",
+                confused: "song (9).mp3",
+                joyful: "song (10).mp3"
+            },
+            cafe: {
+                happy: "song (11).mp3",
+                depressed: "song (12).mp3",
+                relaxed: "song (13).mp3",
+                confused: "song (14).mp3",
+                joyful: "song (15).mp3"
+            },
+            pub: {
+                happy: "song (16).mp3",
+                depressed: "song (17).mp3",
+                relaxed: "song (18).mp3",
+                confused: "song (19).mp3",
+                joyful: "song (20).mp3"
+            },
+            bedroom: {
+                happy: "song (21).mp3",
+                depressed: "song (22).mp3",
+                relaxed: "song (23).mp3",
+                confused: "song (24).mp3",
+                joyful: "song (25).mp3"
+            },
+            'living-room': {
+                happy: "song (26).mp3",
+                depressed: "song (27).mp3",
+                relaxed: "song (28).mp3",
+                confused: "song (29).mp3",
+                joyful: "song (30).mp3"
+            },
+            kitchen: {
+                happy: "song (31).mp3",
+                depressed: "song (32).mp3",
+                relaxed: "song (33).mp3",
+                confused: "song (34).mp3",
+                joyful: "song (35).mp3"
+            },
+        };
+
+        // DOM elements
+        const locationNodess = document.querySelectorAll('.location');
+        const moodContainer = document.getElementById('mood-container');
+        //const moodNodes = document.querySelectorAll('.mood');
+        const startBtn = document.getElementById('start-btn');
+        const player = document.getElementById('player');
+        //const musicPlayer = document.getElementById('music-player');
+        const afterMood = document.getElementById('after-mood');
+        //const afterNodes = document.querySelectorAll('.after');
+        const submitBtn = document.getElementById('submit-btn');
+
+        // Selected values
+        //let selectedLocation = null;
+        //let selectedMood = null;
+        let selectedAfterMood = null;
+
+        // Location selection
+        locationNodess.forEach(node => {
+            node.addEventListener('click', () => {
+                locationNodess.forEach(n => n.classList.remove('selected'));
+                node.classList.add('selected');
+                selectedLocation = node.getAttribute('data-value');
+                moodContainer.style.display = 'block';
+                startBtn.disabled = true;
+            });
+        });
+
+        // Mood selection
+        moodNodes.forEach(node => {
+            node.addEventListener('click', () => {
+                moodNodes.forEach(n => n.classList.remove('selected'));
+                node.classList.add('selected');
+                selectedMood = node.getAttribute('data-value');
+                startBtn.disabled = false;
+            });
+        });
+
+        // Start listening
+        startBtn.addEventListener('click', () => {
+            if (selectedLocation && selectedMood) {
+                const track = musicLibrary[selectedLocation][selectedMood];
+                musicPlayer.src = track;
+                player.style.display = 'block';
+                moodContainer.style.display = 'none';
+                startBtn.style.display = 'none';
+                
+                // When music ends, show after mood selection
+                musicPlayer.onended = function() {
+                    afterMood.style.display = 'block';
+                };
+                
+                musicPlayer.play();
+            }
+        });
+
+        // After mood selection
+        afterNodes.forEach(node => {
+            node.addEventListener('click', () => {
+                afterNodes.forEach(n => n.classList.remove('selected'));
+                node.classList.add('selected');
+                selectedAfterMood = node.getAttribute('data-value');
+                submitBtn.disabled = false;
+            });
+        });
+
+        // Submit
+        submitBtn.addEventListener('click', () => {
+            if (selectedAfterMood) {
+                alert(`Thank you for your feedback! You reported feeling ${selectedAfterMood} after listening.`);
+                // Here you would typically send this data to a server
+                location.reload(); // Reset the app
+            }
+        });
+        });
+    </script>
+</body>
+</html>
